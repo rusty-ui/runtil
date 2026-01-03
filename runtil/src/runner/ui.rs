@@ -4,9 +4,12 @@ use crate::task::Task;
 
 pub struct UIThreadRunner {
     tasks: SegQueue<Task>,
-    imp: UIThreadRunnerImpl,
 }
 
 impl UIThreadRunner {
-    pub fn new() -> Self {}
+    pub fn new() -> Self {
+        UIThreadRunner {
+            tasks: SegQueue::new(),
+        }
+    }
 }

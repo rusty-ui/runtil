@@ -1,8 +1,14 @@
-pub struct RunLoop {}
+use crate::driver::EventPumpImpl;
+
+pub struct RunLoop {
+    pump: EventPumpImpl,
+}
 
 impl RunLoop {
     pub fn new() -> Self {
-        RunLoop {}
+        RunLoop {
+            pump: EventPumpImpl::new(),
+        }
     }
 }
 

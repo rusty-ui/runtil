@@ -2,7 +2,7 @@
 
 mod driver;
 mod runloop;
-mod runner;
+pub mod runner;
 mod task;
 
 pub use runloop::*;
