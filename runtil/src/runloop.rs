@@ -1,22 +1,29 @@
 use std::{
-    sync::OnceLock,
+    sync::{Arc, OnceLock},
     thread::{self, ThreadId},
 };
 
-use crate::runner::mainthread::MainThreadRunner;
+use crate::{actor::MainMarker, runner::mainthread::MainThreadRunner, task::MainTask};
 
 pub(crate) static MAIN_THREAD_ID: OnceLock<ThreadId> = OnceLock::new();
 
-pub struct Context {}
+pub struct Context {
+    main_runner: Arc<MainThreadRunner>,
+}
 
 impl Context {
-    pub fn new() -> Self {
-        Context {}
+    pub(crate) fn new(main_runner: Arc<MainThreadRunner>) -> Self {
+        Context { main_runner }
     }
 
-    pub fn spawn(&mut self, fut: impl Future<Output = ()>) {}
+    pub fn spawn(&self, _fut: impl Future<Output = ()>) {
+        unimplemented!();
+    }
 
-    pub fn dispatch_main(&mut self, fut: impl Future<Output = ()>) {}
+    pub fn dispatch_main(&self, f: impl Fn(MainMarker) -> () + 'static) {
+        let task = MainTask { f: Box::new(f) };
+        self.main_runner.schedule_task(task);
+    }
 }
 
 pub trait UserMessage {}
@@ -26,9 +33,9 @@ pub trait RunLoopHandler<M: UserMessage>
 where
     Self: Send + Sync,
 {
-    fn init(&mut self, _cx: &mut Context) {}
+    fn init(&mut self, _cx: &Context) {}
     async fn handle_event(&mut self, _cx: &mut Context) {}
-    fn quit(&mut self, _cx: &mut Context) {}
+    fn quit(&mut self, _cx: &Context) {}
 }
 
 pub struct RunLoop<M, H>
@@ -36,7 +43,7 @@ where
     M: UserMessage,
     H: RunLoopHandler<M>,
 {
-    main_runner: MainThreadRunner,
+    main_runner: Arc<MainThreadRunner>,
     // worker_runner: ParallelRunner,
     handler: H,
     phantom: std::marker::PhantomData<M>,
@@ -52,11 +59,18 @@ where
         let _ = MAIN_THREAD_ID.set(thread_id);
 
         RunLoop {
-            main_runner: MainThreadRunner::new(),
+            main_runner: Arc::new(MainThreadRunner::new()),
             handler,
             phantom: std::marker::PhantomData,
         }
     }
 
-    pub fn run(&mut self) {}
+    fn create_context(&self) -> Context {
+        Context::new(self.main_runner.clone())
+    }
+
+    pub fn run(&mut self) {
+        let context = self.create_context();
+        self.handler.init(&context);
+    }
 }

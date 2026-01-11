@@ -36,7 +36,7 @@ impl AppkitEventPump {
         AppkitEventPump { ct }
     }
 
-    fn set_task_and_schedule(&self, task: MainTask) -> AppkitEventPumpResult<()> {
+    pub(crate) fn set_task_and_schedule(&self, task: MainTask) -> AppkitEventPumpResult<()> {
         {
             let mut ct = match self.ct.write() {
                 Ok(ct) => ct,

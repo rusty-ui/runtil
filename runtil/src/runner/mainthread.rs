@@ -2,7 +2,7 @@ use crossbeam::queue::SegQueue;
 
 use crate::{driver::EventPumpImpl, task::MainTask};
 
-pub struct MainThreadRunner {
+pub(crate) struct MainThreadRunner {
     tasks: SegQueue<MainTask>,
     pump: EventPumpImpl,
 }
@@ -15,5 +15,7 @@ impl MainThreadRunner {
         }
     }
 
-    pub fn schedule_task(&self) {}
+    pub(crate) fn schedule_task(&self, task: MainTask) {
+        self.pump.set_task_and_schedule(task);
+    }
 }
