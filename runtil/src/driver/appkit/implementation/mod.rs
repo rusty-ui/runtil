@@ -57,4 +57,8 @@ impl AppkitEventPump {
     pub fn run(&self) {
         unsafe { runtilappkit_run() };
     }
+
+    pub fn quit(&self) {
+        unsafe { runtilappkit_destroy() };
+    }
 }

@@ -47,6 +47,7 @@ where
     // worker_runner: ParallelRunner,
     handler: H,
     phantom: std::marker::PhantomData<M>,
+    initialized: bool,
 }
 
 impl<M, H> RunLoop<M, H>
@@ -62,6 +63,7 @@ where
             main_runner: Arc::new(MainThreadRunner::new()),
             handler,
             phantom: std::marker::PhantomData,
+            initialized: true,
         }
     }
 
@@ -73,5 +75,22 @@ where
         let context = self.create_context();
         self.handler.init(&context);
         self.main_runner.run();
+    }
+
+    pub fn quit(&mut self) {
+        self.main_runner.quit();
+        self.initialized = false;
+    }
+}
+
+impl<M, H> Drop for RunLoop<M, H>
+where
+    M: UserMessage,
+    H: RunLoopHandler<M>,
+{
+    fn drop(&mut self) {
+        if self.initialized {
+            self.quit();
+        }
     }
 }

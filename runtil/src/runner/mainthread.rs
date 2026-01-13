@@ -22,4 +22,8 @@ impl MainThreadRunner {
     pub fn run(&self) {
         self.pump.run();
     }
+
+    pub fn quit(&self) {
+        self.pump.quit();
+    }
 }
