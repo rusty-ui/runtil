@@ -1,4 +1,5 @@
 use std::{
+    any::Any,
     sync::{Arc, OnceLock},
     thread::{self, ThreadId},
 };
@@ -26,34 +27,33 @@ impl Context {
     }
 }
 
-pub trait UserMessage {}
+pub struct Message {
+    pub inner: Box<dyn Any + Send + Sync>,
+}
 
 #[allow(async_fn_in_trait)]
-pub trait RunLoopHandler<M: UserMessage>
+pub trait RunLoopHandler
 where
     Self: Send + Sync,
 {
     fn init(&mut self, _cx: &Context) {}
-    async fn handle_event(&mut self, _cx: &mut Context) {}
+    async fn handle_message(&self, _cx: &mut Context, _message: Message) {}
     fn quit(&mut self, _cx: &Context) {}
 }
 
-pub struct RunLoop<M, H>
+pub struct RunLoop<H>
 where
-    M: UserMessage,
-    H: RunLoopHandler<M>,
+    H: RunLoopHandler,
 {
     main_runner: Arc<MainThreadRunner>,
     // worker_runner: ParallelRunner,
     handler: H,
-    phantom: std::marker::PhantomData<M>,
     initialized: bool,
 }
 
-impl<M, H> RunLoop<M, H>
+impl<H> RunLoop<H>
 where
-    M: UserMessage,
-    H: RunLoopHandler<M>,
+    H: RunLoopHandler,
 {
     pub fn new(handler: H) -> Self {
         let thread_id = thread::current().id();
@@ -62,7 +62,6 @@ where
         RunLoop {
             main_runner: Arc::new(MainThreadRunner::new()),
             handler,
-            phantom: std::marker::PhantomData,
             initialized: true,
         }
     }
@@ -83,10 +82,9 @@ where
     }
 }
 
-impl<M, H> Drop for RunLoop<M, H>
+impl<H> Drop for RunLoop<H>
 where
-    M: UserMessage,
-    H: RunLoopHandler<M>,
+    H: RunLoopHandler,
 {
     fn drop(&mut self) {
         if self.initialized {
