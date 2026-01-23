@@ -15,7 +15,7 @@ class RuntilAppkitState {
 
 @MainActor
 @_cdecl("runtilappkit_init")
-func RuntilAppkitInit(ud: UnsafeMutableRawPointer, callback: @convention(c) (UnsafeMutableRawPointer?) -> Void) {
+func runtilAppkitInit(ud: UnsafeMutableRawPointer, callback: @convention(c) (UnsafeMutableRawPointer?) -> Void) {
     let loop = RunLoop.current.getCFRunLoop();
     
     assert(RuntilAppkitState.shared.state == nil, "RuntilAppkitState is already initialized");
@@ -34,7 +34,7 @@ func RuntilAppkitInit(ud: UnsafeMutableRawPointer, callback: @convention(c) (Uns
 }
 
 @_cdecl("runtilappkit_schedule")
-func RuntilAppkitSchedule() {
+func runtilAppkitSchedule() {
     Task { @MainActor in
         guard let state = RuntilAppkitState.shared.state else {
             assertionFailure("RuntilAppkitState is not initialized")
@@ -48,7 +48,7 @@ func RuntilAppkitSchedule() {
 
 @MainActor
 @_cdecl("runtilappkit_run")
-func RuntilAppkitRun() {
+func runtilAppkitRun() {
     guard let state = RuntilAppkitState.shared.state else {
         assertionFailure("RuntilAppkitState is not initialized")
         return
@@ -59,7 +59,7 @@ func RuntilAppkitRun() {
 
 @MainActor
 @_cdecl("runtilappkit_destroy")
-func RuntilAppkitDestroy() {
+func runtilAppkitDestroy() {
     RuntilAppkitState.shared.state = nil
 }
 
