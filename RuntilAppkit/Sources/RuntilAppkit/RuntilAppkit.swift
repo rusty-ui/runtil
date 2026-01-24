@@ -75,7 +75,6 @@ class RWindow {
             backing: .buffered,
             defer: false
         );
-        self.window.makeKeyAndOrderFront(nil);
     }
     
     @MainActor
@@ -93,7 +92,14 @@ func runtilAppkitCreateWindow() -> UnsafeMutableRawPointer {
 }
 
 @MainActor
+@_cdecl("runtilappkit_show_window")
+func runtilAppkitShowWindow(ptr: UnsafeMutableRawPointer) {
+    let wnd = Unmanaged<RWindow>.fromOpaque(ptr).takeUnretainedValue();
+    wnd.window.makeKeyAndOrderFront(nil);
+}
+
+@MainActor
 @_cdecl("runtilappkit_destroy_window")
 func runtilAppkitDestroyWindow(ptr: UnsafeMutableRawPointer) {
-    let _ = Unmanaged<RWindow>.fromOpaque(ptr).takeUnretainedValue();
+    let _ = Unmanaged<RWindow>.fromOpaque(ptr).takeRetainedValue();
 }

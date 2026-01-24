@@ -4,7 +4,7 @@ use std::{
 };
 
 use super::binding::*;
-use crate::{actor::MainMarker, task::MainTask};
+use crate::{actor::MainMarker, task::MainTask, window::Window};
 
 pub enum AppkitEventPumpError {
     LockError,
@@ -17,7 +17,6 @@ pub struct AppkitEventPump {
 }
 
 extern "C" fn callback(ct: *const c_void) {
-    unsafe { runtilappkit_create_window() };
     // SAFETY: ct is null checked
     let optask = unsafe { Arc::from_raw(ct as *const RwLock<Option<MainTask>>) };
     if let Ok(mut optask) = optask.write() {
@@ -55,11 +54,34 @@ impl AppkitEventPump {
         Ok(())
     }
 
+    pub fn create_window(&self) -> Window {
+        let inner = AppkitWindowImpl::new();
+        Window::new(inner)
+    }
+
     pub fn run(&self) {
         unsafe { runtilappkit_run() };
     }
 
     pub fn quit(&self) {
         unsafe { runtilappkit_destroy() };
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct AppkitWindowImpl {
+    raw_ptr: *const c_void,
+}
+
+impl AppkitWindowImpl {
+    pub(crate) fn new() -> Self {
+        let raw_ptr = unsafe { runtilappkit_create_window() };
+        AppkitWindowImpl { raw_ptr }
+    }
+
+    pub(crate) fn show(&self) {
+        unsafe {
+            runtilappkit_show_window(self.raw_ptr);
+        };
     }
 }

@@ -5,6 +5,7 @@ use std::{
 
 use crate::{
     actor::MainMarker, event::Event, runner::mainthread::MainThreadRunner, task::MainTask,
+    window::Window,
 };
 
 pub(crate) static MAIN_THREAD_ID: OnceLock<ThreadId> = OnceLock::new();
@@ -25,6 +26,10 @@ impl Context {
     pub fn dispatch_main(&self, f: impl Fn(MainMarker) -> () + 'static) {
         let task = MainTask { f: Box::new(f) };
         self.main_runner.schedule_task(task);
+    }
+
+    pub fn create_window(&self) -> Window {
+        self.main_runner.create_window()
     }
 }
 

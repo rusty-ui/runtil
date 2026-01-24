@@ -3,3 +3,5 @@ pub mod appkit;
 
 #[cfg(target_os = "macos")]
 pub use appkit::implementation::AppkitEventPump as EventPumpImpl;
+#[cfg(target_os = "macos")]
+pub use appkit::implementation::AppkitWindowImpl as WindowImpl;
