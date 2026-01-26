@@ -75,20 +75,20 @@ impl AppkitWindowManager {
         AppkitWindowManager {}
     }
 
-    pub(crate) fn create_window_impl(&self) -> AppkitWindowImpl {
-        AppkitWindowImpl::new()
+    pub(crate) fn create_window_impl(&self) -> AppkitWindow {
+        AppkitWindow::new()
     }
 }
 
 #[derive(Clone, Debug)]
-pub struct AppkitWindowImpl {
+pub struct AppkitWindow {
     raw_ptr: *const c_void,
 }
 
-impl AppkitWindowImpl {
+impl AppkitWindow {
     pub(crate) fn new() -> Self {
         let raw_ptr = unsafe { runtilappkit_create_window() };
-        AppkitWindowImpl { raw_ptr }
+        AppkitWindow { raw_ptr }
     }
 
     pub(crate) fn show(&self) {
