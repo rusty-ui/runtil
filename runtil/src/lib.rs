@@ -5,6 +5,7 @@ mod driver;
 pub mod event;
 mod runloop;
 pub mod runner;
+pub mod service;
 mod task;
 pub mod window;
 

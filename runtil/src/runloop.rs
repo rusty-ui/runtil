@@ -5,8 +5,8 @@ use std::{
 };
 
 use crate::{
-    actor::MainMarker, event::Event, runner::mainthread::MainThreadRunner, task::MainTask,
-    window::WindowManager,
+    actor::MainMarker, event::Event, runner::mainthread::MainThreadRunner, service::Service,
+    task::MainTask, window::WindowManager,
 };
 
 pub(crate) static MAIN_THREAD_ID: OnceLock<ThreadId> = OnceLock::new();
@@ -33,6 +33,10 @@ impl<M: UserMessage> Context<M> {
         self.main_runner.schedule_task(task);
     }
 
+    pub fn register_service(&mut self, serv: impl Service<M>) {
+        todo!();
+    }
+
     pub fn window_manager(&self) -> WindowManager {
         let inner = self.main_runner.create_window_manager_impl();
         WindowManager::new(inner)
@@ -45,9 +49,9 @@ pub trait RunLoopHandler<M: UserMessage>
 where
     Self: Send + Sync,
 {
-    fn init(&mut self, _cx: &Context<M>) {}
-    fn handle_message(&mut self, _cx: &mut Context<M>, _msg: M) {}
-    fn handle_event(&mut self, _cx: &mut Context<M>, _e: Event) {}
+    fn init(&mut self, _cx: &mut Context<M>) {}
+    fn handle_message(&mut self, _cx: &Context<M>, _msg: M) {}
+    fn handle_event(&mut self, _cx: &Context<M>, _e: Event) {}
     fn quit(&mut self, _cx: &Context<M>) {}
 }
 
